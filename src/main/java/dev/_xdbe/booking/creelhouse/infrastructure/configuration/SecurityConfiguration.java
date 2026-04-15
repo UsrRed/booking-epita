@@ -52,16 +52,16 @@ public class SecurityConfiguration {
         UserDetails administrator = User.builder()
             .username("admin")
             .password("{bcrypt}$2a$10$mszdPv220dAA78E643.Ege4lhqMUYv38cj4iwrKUJ8dQipNM2jHL2")
-            .roles("ADMIN") [cite: 194]
+            .roles("ADMIN")
             .build();
 
         UserDetails guest = User.builder()
             .username("guest")
             .password("{bcrypt}$2a$10$2cAXJutRgsKbMUCBTw0OfergYpkB2NAkGHlhWBpWJtbvkSmS3lcZu")
-            .roles("GUEST") [cite: 203]
+            .roles("GUEST")
             .build();
 
-        return new InMemoryUserDetailsManager(administrator, guest); [cite: 186]
+        return new InMemoryUserDetailsManager(administrator, guest);
     }
 
 }
