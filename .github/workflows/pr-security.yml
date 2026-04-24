@@ -64,12 +64,15 @@ jobs:
       - name: Run differential analysis with semgrep
         run: |
           semgrep scan \
-            --config=auto \
+            --config="p/java" \
+            --config="p/owasp-top-ten" \
             --baseline-commit=${{ github.event.pull_request.base.sha }} \
+            --error \
             --sarif \
             --output=semgrep-diff.sarif
 
       - name: Save differential report as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-diff-report
