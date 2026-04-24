@@ -65,6 +65,7 @@ jobs:
         run: |
           semgrep scan \
             --config="p/java" \
+            --config=.semgrep \
             --config="p/owasp-top-ten" \
             --baseline-commit=${{ github.event.pull_request.base.sha }} \
             --error \
