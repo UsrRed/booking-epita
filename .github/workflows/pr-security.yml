@@ -42,8 +42,11 @@ jobs:
       - name: Compare analysis
         uses: google/osv-scanner-action/osv-reporter-action@v1.9.0
         with:
-          scan-before: osv-before.json
-          scan-after: osv-after.json
+          scan-args: |-
+            --old=osv-before.json
+            --new=osv-after.json
+            --output=osv-report.json
+            --fail-on-vuln=true
 
       - name: Save differential report as artifact
         uses: actions/upload-artifact@v4
@@ -63,13 +66,15 @@ jobs:
 
       - name: Run differential analysis with semgrep
         run: |
-          semgrep ci \
+          semgrep scan \
             --config=.semgrep \
             --baseline-commit=${{ github.event.pull_request.base.sha }} \
+            --error \
             --sarif \
             --output=semgrep-diff.sarif
 
       - name: Save differential report as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-diff-report
