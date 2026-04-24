@@ -1,0 +1,76 @@
+name: Security Check on Pull Request
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  DependenciesAnalysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run OSV Scanner (After PR)
+        uses: google/osv-scanner-action/osv-scanner-action@v1.9.0
+        with:
+          scan-args: |-
+            --format json
+            --output osv-after.json
+            ./
+        continue-on-error: true
+
+      - name: checkout baseline commit
+        run: git checkout ${{ github.event.pull_request.base.sha }}
+
+      - name: Run OSV Scanner (Before PR)
+        uses: google/osv-scanner-action/osv-scanner-action@v1.9.0
+        with:
+          scan-args: |-
+            --format json
+            --output osv-before.json
+            ./
+        continue-on-error: true
+
+      - name: Compare analysis
+        uses: google/osv-scanner-action/osv-reporter-action@v1.9.0
+        with:
+          scan-before: osv-before.json
+          scan-after: osv-after.json
+
+      - name: Save differential report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencies-diff-report
+          path: osv-report.json
+
+  SourceCodeAnalysis:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run differential analysis with semgrep
+        run: |
+          semgrep ci \
+            --config=.semgrep \
+            --baseline-commit=${{ github.event.pull_request.base.sha }} \
+            --sarif \
+            --output=semgrep-diff.sarif
+
+      - name: Save differential report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-diff-report
+          path: semgrep-diff.sarif
