@@ -46,6 +46,7 @@ jobs:
             --old=osv-before.json
             --new=osv-after.json
             --output=osv-report.json
+            --fail-on-vuln=true
 
       - name: Save differential report as artifact
         uses: actions/upload-artifact@v4
